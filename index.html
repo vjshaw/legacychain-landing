@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>LegacyChain Will Draft Generator</title>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center text-blue-800">Create Your Will</h1>
+    <form id="willForm" class="space-y-4">
+      <input type="text" name="full_name" placeholder="Full Name" required class="w-full p-3 border rounded" />
+      <input type="text" name="location" placeholder="Location (City, State)" required class="w-full p-3 border rounded" />
+      <input type="text" name="executor" placeholder="Executor Name" required class="w-full p-3 border rounded" />
+      <textarea name="assets" placeholder="Assets (comma-separated)" class="w-full p-3 border rounded" required></textarea>
+      <textarea name="beneficiaries" placeholder="Beneficiaries (comma-separated)" class="w-full p-3 border rounded" required></textarea>
+      <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Generate My Will</button>
+    </form>
+    <div id="result" class="mt-6 text-center"></div>
+  </div>
+
+  <script>
+    document.getElementById('willForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = {
+        full_name: formData.get('full_name'),
+        location: formData.get('location'),
+        executor: formData.get('executor'),
+        assets: formData.get('assets').split(',').map(item => item.trim()),
+        beneficiaries: formData.get('beneficiaries').split(',').map(item => item.trim())
+      };
+
+      const res = await fetch('https://your-backend-api.com/generate-will', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        const responseData = await res.json();
+        const blob = new Blob([responseData.will_draft], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        document.getElementById('result').innerHTML = `<a href="${url}" download="WillDraft.pdf" class="text-blue-600 underline">Download Your Will</a>`;
+      } else {
+        document.getElementById('result').textContent = "Something went wrong. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>
